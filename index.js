@@ -6,37 +6,30 @@ app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Methods", "GET, PUT, POST");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
-  });
+});
 
-const eventsTable = [
-    {
-        name: "event1",
-        // date: 
-    }
-]
-
-// Let's also make the assumption that this is some data retrieved from some database.
+// Let's make the assumption that this is some data retrieved from some database.
 const dummyData = [
     {
-        clientId: "123",
+        clientId: "111",
         event: "event1",
         theme: "red",
         option: "pop-up"
     },
     {
-        clientId: "123",
+        clientId: "222",
         event: "event2",
         theme: "yellow",
         option: "embedded"
     },
     {
-        clientId: "321",
+        clientId: "333",
         event: null,
         theme: "green",
         option: null
     },
     {
-        clientId: "333",
+        clientId: "444",
         event: null,
         theme: null,
         option: null
@@ -44,7 +37,7 @@ const dummyData = [
 ]
 
 // Let's assume that this is another file in the api endpoint
-const Validate = async (clientId) => {
+const Validate = async (clientId, date) => {
 
     
 
@@ -62,7 +55,6 @@ const Validate = async (clientId) => {
     }
 
     // IF user client date matches selected event date THEN
-    
 
     // IF user selected Popup option, then widget will show the popup.
 
@@ -72,17 +64,22 @@ const Validate = async (clientId) => {
         success: true,
         message: ``,
         clientId,
+        date,
         option: client.option,
         theme: client.theme,
-        event: client.event
+        event: client.event,
     }
 }
 
 app.get('/', async (req, res) => {
-    // console.log();
-    res.send(await Validate(req.query.clientId));
-})
+    console.log("Received request");
+    const {clientId, date} = req.query;
+    if(!clientId || !date) {
+        return res.status(404).send("Insufficient Parameters.");
+    }
+    res.send(await Validate(clientId, date));
+});
 
 app.listen(3000, () => {
     console.log("Server is operational.");
-})
+});
