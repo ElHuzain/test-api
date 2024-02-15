@@ -37,6 +37,7 @@ const validateUserClientId = async (req, res) => {
         message: ``,
         clientId,
         date,
+        imgSrc: client.imgSrc,
         option: client.option,
         theme: client.theme,
         event: client.event,
