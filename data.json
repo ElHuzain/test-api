@@ -9,7 +9,7 @@
         "clientId": "222",
         "event": "event2",
         "theme": "yellow",
-        "option": "embedded"
+        "option": "banner"
     },
     {
         "clientId": "333",
