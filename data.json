@@ -1,0 +1,26 @@
+[
+    {
+        "clientId": "111",
+        "event": "event1",
+        "theme": "red",
+        "option": "pop-up"
+    },
+    {
+        "clientId": "222",
+        "event": "event2",
+        "theme": "yellow",
+        "option": "embedded"
+    },
+    {
+        "clientId": "333",
+        "event": null,
+        "theme": "green",
+        "option": null
+    },
+    {
+        "clientId": "444",
+        "event": null,
+        "theme": null,
+        "option": null
+    }
+]
