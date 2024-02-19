@@ -17,7 +17,7 @@ const validateUserClientId = async (req, res) => {
 
     const { clientId, date } = req.query;
 
-    if (!clientId || !date) return res.status(400).send({ message: "Insufficient Parameters." });
+    if (!clientId || !date) return res.status(400).send({ message: "Insufficient Input." });
 
     const client = jsonData.find((value) => value.clientId === clientId);
 
@@ -28,10 +28,13 @@ const validateUserClientId = async (req, res) => {
     if (!client.event || !client.theme) return res.status(400).send({ message: "Please choose theme and event." });
 
     // IF user client date matches selected event date THEN
-
+    // Handled client-side (by widget)
+    
     // IF user selected Popup option, then widget will show the popup.
+    // Handled client-side (by widget)
 
     // IF user selected banner embed option, then widget will write into target HTML element (provided by user)
+    // Handled client-side (by widget)
 
     return res.status(200).send({
         message: ``,
