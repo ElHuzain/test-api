@@ -1,8 +1,8 @@
 import express from "express"
+import { ref, get, child } from "firebase/database";
+import { database } from "./firebase.js";
 
-// Let's assume that this is data coming from database
-import jsonData from './data.json' with { type: "json" };
-
+// Express
 const app = express();
 
 // Allowing reqs from anyone and anything
@@ -13,38 +13,50 @@ app.use(function (req, res, next) {
     next();
 });
 
+
 const validateUserClientId = async (req, res) => {
+    const { clientId, websiteId } = req.query;
 
-    const { clientId, date } = req.query;
+    // Check if request is valid (has required parameters)
+    if (!clientId || !websiteId) return res.status(400).send("Insufficient parameters.");
+    const dbRef = ref(database);
 
-    if (!clientId || !date) return res.status(400).send({ message: "Insufficient Input." });
+    // Check if parameters is in valid format
 
-    const client = jsonData.find((value) => value.clientId === clientId);
+    // Fetch user & website
+    const userSnapshot = await get(child(dbRef, `user/${clientId}`));
+    if (!userSnapshot.exists()) return res.status(400).send("Invalid clientId");
+    const user = userSnapshot.val();
 
-    // Check if clientId exists
-    if (!client) return res.status(400).send({ message: "Invalid clientId."})
+    const websiteSnapshot = await get(child(dbRef, `website/${clientId}/${websiteId}`));
+    if (!websiteSnapshot.exists()) return res.status(400).send("Invalid websiteId");
+    const website = Object.entries(websiteSnapshot.val())[0][1];
 
-    // IF user has registered client ID AND user has selected event and theme THEN
-    if (!client.event || !client.theme) return res.status(400).send({ message: "Please choose theme and event." });
+    // Check if website.url === origin
+    // TODO: MAKE IT ACCEPT ONLY HTTPS
+    // TODO: Make it ONLY proceed when url === origin
+    const origin = req.headers.origin ? req.headers.origin.replace("http://", "").replace("https://", "") : null;
 
-    // IF user client date matches selected event date THEN
-    // Handled client-side (by widget)
-    
-    // IF user selected Popup option, then widget will show the popup.
-    // Handled client-side (by widget)
+    // For each userEvent in that website,
+    const userEventsSnapShot = await get(child(dbRef, `userEvent/${clientId}/${websiteId}`));
+    if (!userEventsSnapShot.exists()) return res.status(400).send("No event selections found.")
+    // fetch subscription, fetch tempate, fetch event.
+    // Prepare & deliver all in one array.
+    // console.log(userEventsSnapShot.val());
+    let selectionArray = [];
+    for (const websiteKey in userEventsSnapShot.val()) {
+        const websiteObject = userEventsSnapShot.val()[websiteKey]
+        if (websiteObject.status) {
+            const templateSnapshot = await get(child(dbRef, `template/${websiteObject.templateId}`));
+            const eventSnapshot = await get(child(dbRef, `template/${websiteObject.eventId}`));
+            websiteObject.event = eventSnapshot.val();
+            websiteObject.template = templateSnapshot.val();
+            selectionArray.push(websiteObject)
+        }
+    }
+    console.log(selectionArray);
 
-    // IF user selected banner embed option, then widget will write into target HTML element (provided by user)
-    // Handled client-side (by widget)
-
-    return res.status(200).send({
-        message: ``,
-        clientId,
-        date,
-        imgSrc: client.imgSrc,
-        option: client.option,
-        theme: client.theme,
-        event: client.event,
-    })
+    res.status(200).send(selectionArray);
 }
 
 app.get('/', validateUserClientId);
