@@ -35,7 +35,14 @@ const validateUserClientId = async (req, res) => {
     // Check if website.url === origin
     // TODO: MAKE IT ACCEPT ONLY HTTPS
     // TODO: Make it ONLY proceed when url === origin
-    const origin = req.headers.origin ? req.headers.origin.replace("http://", "").replace("https://", "") : null;
+    const origin = req.headers.origin ? req.headers.origin.replace("http://", "").replace("https://", "") : "Local Host";
+
+    const authorizedDomain = `
+    =========
+    Registered domain: ${websiteSnapshot.val().url}.\n
+    Request coming from: ${origin}
+    =========
+    `
 
     // For each userEvent in that website,
     const userEventsSnapShot = await get(child(dbRef, `userEvent/${clientId}/${websiteId}`));
@@ -48,9 +55,10 @@ const validateUserClientId = async (req, res) => {
         const websiteObject = userEventsSnapShot.val()[websiteKey]
         if (websiteObject.status) {
             const templateSnapshot = await get(child(dbRef, `template/${websiteObject.templateId}`));
-            const eventSnapshot = await get(child(dbRef, `template/${websiteObject.eventId}`));
+            const eventSnapshot = await get(child(dbRef, `event/${websiteObject.eventId}`));
             websiteObject.event = eventSnapshot.val();
             websiteObject.template = templateSnapshot.val();
+            websiteObject.authorizedDomain = authorizedDomain;
             selectionArray.push(websiteObject)
         }
     }
@@ -61,6 +69,8 @@ const validateUserClientId = async (req, res) => {
 
 app.get('/', validateUserClientId);
 
+
+// TODO: Change port to process.env.PORT
 app.listen(3000, () => {
     console.log("Server is operational.");
 });
